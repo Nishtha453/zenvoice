@@ -31,7 +31,7 @@ function App() {
     
     setCurrentView('dashboard');
     
-    // Show success message
+  // Show success message
     alert('Invoice saved successfully!');
   };
 
