@@ -1,8 +1,7 @@
 import React from 'react';
-import { Eye, Download, Edit, Trash2, Plus, Search, Filter, BarChart3, TrendingUp } from 'lucide-react';
+import { Eye, Edit, Trash2, Plus, Search, Filter, TrendingUp, Link } from 'lucide-react';
 import { InvoiceData } from '../types/invoice';
 import { formatCurrency } from '../utils/calculations';
-import { InvoiceAnalytics } from './InvoiceAnalytics';
 
 interface InvoiceDashboardProps {
   invoices: InvoiceData[];
@@ -10,6 +9,7 @@ interface InvoiceDashboardProps {
   onDelete: (id: string) => void;
   onPreview: (invoice: InvoiceData) => void;
   onCreateNew: () => void;
+  onShare: (invoice: InvoiceData) => void;
 }
 
 export const InvoiceDashboard: React.FC<InvoiceDashboardProps> = ({
@@ -17,11 +17,11 @@ export const InvoiceDashboard: React.FC<InvoiceDashboardProps> = ({
   onEdit,
   onDelete,
   onPreview,
-  onCreateNew
+  onCreateNew,
+  onShare
 }) => {
   const [searchTerm, setSearchTerm] = React.useState('');
   const [statusFilter, setStatusFilter] = React.useState<string>('all');
-  const [showAnalytics, setShowAnalytics] = React.useState(false);
 
   const filteredInvoices = invoices.filter(invoice => {
     const matchesSearch = 
@@ -43,11 +43,9 @@ export const InvoiceDashboard: React.FC<InvoiceDashboardProps> = ({
     }
   };
 
-  const totalValue = invoices.reduce((sum, invoice) => sum + invoice.total, 0);
-  const paidValue = invoices
-    .filter(invoice => invoice.status === 'paid')
-    .reduce((sum, invoice) => sum + invoice.total, 0);
-  const pendingValue = totalValue - paidValue;
+  const totalCount = invoices.length;
+  const paidCount = invoices.filter(invoice => invoice.status === 'paid').length;
+  const pendingCount = invoices.filter(invoice => invoice.status === 'draft' || invoice.status === 'sent').length;
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
@@ -63,18 +61,6 @@ export const InvoiceDashboard: React.FC<InvoiceDashboardProps> = ({
           
           <div className="flex gap-3">
             <button
-              onClick={() => setShowAnalytics(!showAnalytics)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                showAnalytics 
-                  ? 'bg-purple-600 text-white' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              <BarChart3 size={18} />
-              Analytics
-            </button>
-            
-            <button
               onClick={onCreateNew}
               className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
             >
@@ -85,20 +71,13 @@ export const InvoiceDashboard: React.FC<InvoiceDashboardProps> = ({
         </div>
       </div>
 
-      {/* Analytics Section */}
-      {showAnalytics && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <InvoiceAnalytics invoices={invoices} />
-        </div>
-      )}
-
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl shadow-sm border border-blue-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-blue-700">Total Value</p>
-              <p className="text-2xl font-bold text-blue-900">{formatCurrency(totalValue, 'INR')}</p>
+              <p className="text-sm font-medium text-blue-700">Total Invoices</p>
+              <p className="text-2xl font-bold text-blue-900">{totalCount}</p>
             </div>
             <div className="p-3 bg-blue-600 rounded-full">
               <TrendingUp size={24} className="text-white" />
@@ -110,7 +89,7 @@ export const InvoiceDashboard: React.FC<InvoiceDashboardProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-green-700">Paid</p>
-              <p className="text-2xl font-bold text-green-900">{formatCurrency(paidValue, 'INR')}</p>
+              <p className="text-2xl font-bold text-green-900">{paidCount}</p>
             </div>
             <div className="p-3 bg-green-600 rounded-full">
               <div className="w-6 h-6 bg-white rounded"></div>
@@ -121,8 +100,8 @@ export const InvoiceDashboard: React.FC<InvoiceDashboardProps> = ({
         <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-xl shadow-sm border border-orange-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-orange-700">Pending</p>
-              <p className="text-2xl font-bold text-orange-900">{formatCurrency(pendingValue, 'INR')}</p>
+              <p className="text-sm font-medium text-orange-700">Outstanding</p>
+              <p className="text-2xl font-bold text-orange-900">{pendingCount}</p>
             </div>
             <div className="p-3 bg-orange-600 rounded-full">
               <div className="w-6 h-6 bg-white rounded"></div>
@@ -230,9 +209,16 @@ export const InvoiceDashboard: React.FC<InvoiceDashboardProps> = ({
                         <button
                           onClick={() => onPreview(invoice)}
                           className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                          title="Preview & Download"
+                          title="Preview & Download PDF"
                         >
                           <Eye size={16} />
+                        </button>
+                        <button
+                          onClick={() => onShare(invoice)}
+                          className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                          title="View shareable link"
+                        >
+                          <Link size={16} />
                         </button>
                         <button
                           onClick={() => onEdit(invoice)}

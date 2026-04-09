@@ -6,21 +6,19 @@ interface EmailInvoiceProps {
   invoice: InvoiceData;
   isOpen: boolean;
   onClose: () => void;
-  onSend: (emailData: { to: string; subject: string; message: string }) => void;
 }
 
 export const EmailInvoice: React.FC<EmailInvoiceProps> = ({
   invoice,
   isOpen,
-  onClose,
-  onSend
+  onClose
 }) => {
   const [emailData, setEmailData] = useState({
     to: invoice.toEmail,
     subject: `Invoice ${invoice.invoiceNumber} from ${invoice.fromName}`,
     message: `Dear ${invoice.toName},
 
-Please find attached your invoice ${invoice.invoiceNumber} for the amount of ${invoice.total}.
+Please find your invoice ${invoice.invoiceNumber} for the amount of ${invoice.total} ${invoice.currency}.
 
 Payment is due by ${new Date(invoice.dueDate).toLocaleDateString()}.
 
@@ -30,18 +28,10 @@ Best regards,
 ${invoice.fromName}`
   });
 
-  const [isSending, setIsSending] = useState(false);
-
-  const handleSend = async () => {
-    setIsSending(true);
-    try {
-      await onSend(emailData);
-      onClose();
-    } catch (error) {
-      console.error('Failed to send email:', error);
-    } finally {
-      setIsSending(false);
-    }
+  const handleSend = () => {
+    const mailtoLink = `mailto:${emailData.to}?subject=${encodeURIComponent(emailData.subject)}&body=${encodeURIComponent(emailData.message)}`;
+    window.open(mailtoLink);
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -104,7 +94,7 @@ ${invoice.fromName}`
 
           <div className="bg-blue-50 p-4 rounded-lg">
             <p className="text-sm text-blue-800">
-              <strong>Note:</strong> The invoice PDF will be automatically attached to this email.
+              <strong>Note:</strong> Clicking "Open in Email Client" will open your default email app with this message pre-filled. Download the PDF separately and attach it manually.
             </p>
           </div>
         </div>
@@ -118,20 +108,10 @@ ${invoice.fromName}`
           </button>
           <button
             onClick={handleSend}
-            disabled={isSending}
-            className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           >
-            {isSending ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                Sending...
-              </>
-            ) : (
-              <>
-                <Send size={16} />
-                Send Invoice
-              </>
-            )}
+            <Send size={16} />
+            Open in Email Client
           </button>
         </div>
       </div>
