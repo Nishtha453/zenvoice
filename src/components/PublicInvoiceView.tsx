@@ -1,17 +1,15 @@
 import React from 'react';
-import { Download, CreditCard, Share2 } from 'lucide-react';
+import { Download, Share2 } from 'lucide-react';
 import { InvoiceData } from '../types/invoice';
 import { formatCurrency } from '../utils/calculations';
 import { generateInvoicePDF } from '../utils/pdfGenerator';
 
 interface PublicInvoiceViewProps {
   invoice: InvoiceData;
-  onPayNow?: () => void;
 }
 
 export const PublicInvoiceView: React.FC<PublicInvoiceViewProps> = ({
-  invoice,
-  onPayNow
+  invoice
 }) => {
   const handleDownloadPDF = () => {
     generateInvoicePDF(invoice, invoice.template);
@@ -71,16 +69,6 @@ export const PublicInvoiceView: React.FC<PublicInvoiceViewProps> = ({
                 <Download size={18} />
                 Download PDF
               </button>
-              
-              {onPayNow && (
-                <button
-                  onClick={onPayNow}
-                  className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                >
-                  <CreditCard size={18} />
-                  Pay Now
-                </button>
-              )}
             </div>
           </div>
         </div>

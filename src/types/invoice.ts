@@ -45,11 +45,6 @@ export interface InvoiceData {
   createdAt: string;
   updatedAt: string;
   
-  // New features
   template: 'modern' | 'classic' | 'minimal';
-  isRecurring: boolean;
-  recurringFrequency?: 'weekly' | 'monthly' | 'quarterly';
-  nextDueDate?: string;
   shareableLink?: string;
-  paymentLink?: string;
 }

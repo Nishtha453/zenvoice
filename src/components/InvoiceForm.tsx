@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Save, Eye, Download, Mail, Repeat, Link } from 'lucide-react';
+import { Plus, Trash2, Save, Eye, Mail, Link } from 'lucide-react';
 import { InvoiceData, InvoiceItem } from '../types/invoice';
 import { 
   calculateItemAmount, 
@@ -67,9 +67,6 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
       updatedAt: new Date().toISOString(),
       
       template: 'modern',
-      isRecurring: false,
-      shareableLink: `${window.location.origin}/invoice/${crypto.randomUUID()}`,
-      paymentLink: undefined
     }
   );
 
@@ -145,17 +142,11 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
     onPreview(formData);
   };
 
-  const handleEmailSend = async (emailData: { to: string; subject: string; message: string }) => {
-    // In a real app, this would integrate with EmailJS, Resend, or similar service
-    console.log('Sending email:', emailData);
-    alert('Email sent successfully! (Demo mode)');
-  };
-
   const generateShareableLink = () => {
-    const newLink = `${window.location.origin}/invoice/${crypto.randomUUID()}`;
-    setFormData(prev => ({ ...prev, shareableLink: newLink }));
-    navigator.clipboard.writeText(newLink);
-    alert('Shareable link copied to clipboard!');
+    const link = `${window.location.origin}${window.location.pathname}?invoice=${formData.id}`;
+    setFormData(prev => ({ ...prev, shareableLink: link }));
+    navigator.clipboard.writeText(link);
+    alert('Shareable link copied to clipboard! Note: the recipient must open this link on the same device where the invoice was saved.');
   };
   return (
     <div className="max-w-5xl mx-auto p-6 bg-white rounded-xl shadow-lg">
@@ -475,41 +466,6 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
           </div>
         </div>
 
-        {/* Recurring Invoice Option */}
-        <div className="p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl">
-          <div className="flex items-center gap-3 mb-4">
-            <Repeat className="text-purple-600" size={20} />
-            <h3 className="text-lg font-semibold text-gray-900">Recurring Invoice</h3>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={formData.isRecurring}
-                onChange={(e) => setFormData(prev => ({ ...prev, isRecurring: e.target.checked }))}
-                className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-              />
-              <span className="text-sm text-gray-700">Make this a recurring invoice</span>
-            </label>
-            
-            {formData.isRecurring && (
-              <select
-                value={formData.recurringFrequency || 'monthly'}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  recurringFrequency: e.target.value as 'weekly' | 'monthly' | 'quarterly'
-                }))}
-                className="px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-              >
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-                <option value="quarterly">Quarterly</option>
-              </select>
-            )}
-          </div>
-        </div>
-
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
           <button
@@ -536,7 +492,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
             className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors shadow-sm"
           >
             <Eye size={18} />
-            Preview & Download
+            Preview & Download PDF
           </button>
           
           <button
@@ -554,7 +510,6 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
         invoice={formData}
         isOpen={showEmailModal}
         onClose={() => setShowEmailModal(false)}
-        onSend={handleEmailSend}
       />
     </div>
   );

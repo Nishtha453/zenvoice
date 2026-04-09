@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FileText, Home, Plus, Eye } from 'lucide-react';
 import { InvoiceForm } from './components/InvoiceForm';
 import { InvoiceDashboard } from './components/InvoiceDashboard';
@@ -67,10 +67,22 @@ function App() {
     setCurrentView('public');
   };
 
-  const handlePayNow = () => {
-    // In a real app, this would integrate with Razorpay, Stripe, etc.
-    alert('Payment integration would be implemented here (Razorpay/Stripe)');
-  };
+  // On load, check if URL has ?invoice=<id> and show public view
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const invoiceId = params.get('invoice');
+    if (invoiceId) {
+      const stored = localStorage.getItem('invoices');
+      if (stored) {
+        const all: InvoiceData[] = JSON.parse(stored);
+        const found = all.find(inv => inv.id === invoiceId);
+        if (found) {
+          setPublicInvoice(found);
+          setCurrentView('public');
+        }
+      }
+    }
+  }, []);
 
   const renderContent = () => {
     switch (currentView) {
@@ -87,7 +99,6 @@ function App() {
         return publicInvoice ? (
           <PublicInvoiceView
             invoice={publicInvoice}
-            onPayNow={handlePayNow}
           />
         ) : null;
       case 'dashboard':
@@ -99,6 +110,7 @@ function App() {
             onDelete={handleDeleteInvoice}
             onPreview={handlePreviewInvoice}
             onCreateNew={handleCreateNew}
+            onShare={handleViewPublic}
           />
         );
     }
