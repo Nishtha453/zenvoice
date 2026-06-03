@@ -1,5 +1,4 @@
 import React from 'react';
-import { getCurrencySymbol } from '../utils/calculations';
 
 interface CurrencySelectorProps {
   selectedCurrency: 'INR' | 'USD' | 'EUR' | 'GBP';

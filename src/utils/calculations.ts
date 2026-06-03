@@ -1,8 +1,10 @@
+import { InvoiceItem } from '../types/invoice';
+
 export const calculateItemAmount = (quantity: number, rate: number): number => {
   return quantity * rate;
 };
 
-export const calculateSubtotal = (items: any[]): number => {
+export const calculateSubtotal = (items: InvoiceItem[]): number => {
   return items.reduce((sum, item) => sum + item.amount, 0);
 };
 

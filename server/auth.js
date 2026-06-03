@@ -5,6 +5,10 @@ const jwt = require('jsonwebtoken');
 const pool = require('./db');
 require('dotenv').config();
 
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET is required');
+}
+
 router.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
 

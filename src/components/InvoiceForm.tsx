@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Save, Eye, Download, Mail, Repeat, Link } from 'lucide-react';
+import { Plus, Trash2, Save, Eye, Mail, Repeat, Link } from 'lucide-react';
 import { InvoiceData, InvoiceItem } from '../types/invoice';
 import { 
   calculateItemAmount, 
@@ -108,7 +108,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
     }
   };
 
-  const updateItem = (id: string, field: keyof InvoiceItem, value: any) => {
+  const updateItem = (id: string, field: keyof InvoiceItem, value: string | number) => {
     const newItems = formData.items.map(item => {
       if (item.id === id) {
         const updatedItem = { ...item, [field]: value };

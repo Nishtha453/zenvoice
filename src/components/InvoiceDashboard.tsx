@@ -1,5 +1,5 @@
 import React from 'react';
-import { Eye, Download, Edit, Trash2, Plus, Search, Filter, BarChart3, TrendingUp } from 'lucide-react';
+import { Eye, Edit, Trash2, Plus, Search, Filter, BarChart3, TrendingUp, ExternalLink } from 'lucide-react';
 import { InvoiceData } from '../types/invoice';
 import { formatCurrency } from '../utils/calculations';
 import { InvoiceAnalytics } from './InvoiceAnalytics';
@@ -9,6 +9,7 @@ interface InvoiceDashboardProps {
   onEdit: (invoice: InvoiceData) => void;
   onDelete: (id: string) => void;
   onPreview: (invoice: InvoiceData) => void;
+  onViewPublic: (invoice: InvoiceData) => void;
   onCreateNew: () => void;
 }
 
@@ -17,6 +18,7 @@ export const InvoiceDashboard: React.FC<InvoiceDashboardProps> = ({
   onEdit,
   onDelete,
   onPreview,
+  onViewPublic,
   onCreateNew
 }) => {
   const [searchTerm, setSearchTerm] = React.useState('');
@@ -233,6 +235,13 @@ export const InvoiceDashboard: React.FC<InvoiceDashboardProps> = ({
                           title="Preview & Download"
                         >
                           <Eye size={16} />
+                        </button>
+                        <button
+                          onClick={() => onViewPublic(invoice)}
+                          className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                          title="Public View"
+                        >
+                          <ExternalLink size={16} />
                         </button>
                         <button
                           onClick={() => onEdit(invoice)}

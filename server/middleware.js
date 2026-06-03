@@ -1,6 +1,10 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET is required');
+}
+
 const authMiddleware = (req, res, next) => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
 

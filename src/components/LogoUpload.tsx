@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Upload, X, Image } from 'lucide-react';
+import { X, Image } from 'lucide-react';
 
 interface LogoUploadProps {
   currentLogo?: string;
