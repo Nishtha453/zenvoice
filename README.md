@@ -1,69 +1,109 @@
-# React + TypeScript + Vite
+# Zenvoice
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Zenvoice is a web app for freelancers and small businesses to create, save, preview, and manage invoices.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- React, TypeScript, Vite, Tailwind CSS
+- Node.js, Express
+- PostgreSQL
+- JWT authentication
 
-## Expanding the ESLint configuration
+## Local Setup
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Install frontend dependencies:
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Install backend dependencies:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd server
+npm install
 ```
+
+Create environment files:
+
+```bash
+cp .env.example .env
+cp server/.env.example server/.env
+```
+
+Create the PostgreSQL tables:
+
+```bash
+psql "$DATABASE_URL" -f server/schema.sql
+```
+
+Run the backend:
+
+```bash
+cd server
+npm run dev
+```
+
+Run the frontend:
+
+```bash
+npm run dev
+```
+
+## Environment Variables
+
+Frontend:
+
+```env
+VITE_API_URL=http://localhost:5000
+VITE_BASE_PATH=/
+```
+
+Backend:
+
+```env
+PORT=5000
+NODE_ENV=production
+CLIENT_URL=https://your-frontend-domain.com
+JWT_SECRET=replace-with-a-long-random-secret
+DATABASE_URL=postgresql://...
+```
+
+`CLIENT_URL` can contain multiple comma-separated origins for preview deployments.
+
+## Web Deployment
+
+Recommended first production setup:
+
+- Frontend: Vercel or Netlify
+- Backend: Render or Railway
+- Database: Neon, Supabase, Railway PostgreSQL, or Render PostgreSQL
+
+Frontend settings:
+
+- Build command: `npm run build`
+- Publish directory: `dist`
+- Environment variable: `VITE_API_URL=https://your-api-domain.com`
+
+Backend settings:
+
+- Root directory: `server`
+- Build command: `npm install`
+- Start command: `npm start`
+- Environment variables: `NODE_ENV`, `CLIENT_URL`, `JWT_SECRET`, `DATABASE_URL`
+
+Run `server/schema.sql` once against the production database before real users sign up.
+
+## Production Checklist
+
+- Use a strong `JWT_SECRET`.
+- Set `CLIENT_URL` to the real frontend domain.
+- Set `VITE_API_URL` to the real backend domain.
+- Run the database schema.
+- Verify signup, login, create invoice, edit invoice, delete invoice, and PDF download.
+- Add monitoring/logging before inviting many users.
+- Add rate limiting and input validation before public launch.
+
+## Mobile App Path
+
+Launch the web app first. After the core flow is stable, Zenvoice can be packaged for Play Store using Capacitor or rebuilt as a React Native/Expo app.
