@@ -3,7 +3,58 @@ const router = express.Router();
 const pool = require('./db');
 const authMiddleware = require('./middleware');
 
+const isValidPublicToken = (token) =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(token);
+
+const validateInvoiceData = (data) => {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return 'Invoice data is required';
+  }
+
+  const requiredFields = [
+    'invoiceNumber',
+    'date',
+    'dueDate',
+    'fromName',
+    'fromEmail',
+    'fromAddress',
+    'toName',
+    'toEmail',
+    'toAddress',
+    'currency',
+    'status'
+  ];
+
+  for (const field of requiredFields) {
+    if (!String(data[field] || '').trim()) {
+      return `${field} is required`;
+    }
+  }
+
+  if (!Array.isArray(data.items) || data.items.length === 0) {
+    return 'At least one invoice item is required';
+  }
+
+  if (!['draft', 'sent', 'paid'].includes(data.status)) {
+    return 'Invalid invoice status';
+  }
+
+  if (!['INR', 'USD', 'EUR', 'GBP'].includes(data.currency)) {
+    return 'Invalid currency';
+  }
+
+  if (data.shareToken && !isValidPublicToken(data.shareToken)) {
+    return 'Invalid public invoice token';
+  }
+
+  return null;
+};
+
 router.get('/public/:token', async (req, res) => {
+  if (!isValidPublicToken(req.params.token)) {
+    return res.status(400).json({ error: 'Invalid invoice link' });
+  }
+
   try {
     const result = await pool.query(
       `SELECT id, data, status, created_at, updated_at
@@ -57,9 +108,10 @@ router.get('/:id', authMiddleware, async (req, res) => {
 
 router.post('/', authMiddleware, async (req, res) => {
   const data = req.body;
+  const validationError = validateInvoiceData(data);
 
-  if (!data || Object.keys(data).length === 0) {
-    return res.status(400).json({ error: 'Request body cannot be empty' });
+  if (validationError) {
+    return res.status(400).json({ error: validationError });
   }
 
   try {
@@ -77,6 +129,11 @@ router.post('/', authMiddleware, async (req, res) => {
 
 router.put('/:id', authMiddleware, async (req, res) => {
   const data = req.body;
+  const validationError = validateInvoiceData(data);
+
+  if (validationError) {
+    return res.status(400).json({ error: validationError });
+  }
 
   try {
     const result = await pool.query(

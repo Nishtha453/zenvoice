@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import { FileText, Home, Plus, LogOut } from 'lucide-react';
+import { Home, Plus, LogOut } from 'lucide-react';
 import { InvoiceForm } from './components/InvoiceForm';
 import { InvoiceDashboard } from './components/InvoiceDashboard';
 import { PublicInvoiceView } from './components/PublicInvoiceView';
+import { LandingPage } from './components/LandingPage';
+import { LegalPage } from './components/LegalPage';
+import { BrandMark } from './components/BrandMark';
 import { InvoiceData } from './types/invoice';
 import { generateInvoicePDF } from './utils/pdfGenerator';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -19,7 +22,20 @@ const AppContent: React.FC = () => {
   const [publicInvoice, setPublicInvoice] = useState<InvoiceData | null>(null);
   const [isFetching, setIsFetching] = useState(false);
   const [publicError, setPublicError] = useState('');
-  const publicToken = window.location.pathname.match(/^\/invoice\/([^/]+)\/?$/)?.[1];
+  const [path, setPath] = useState(window.location.pathname);
+  const publicToken = path.match(/^\/invoice\/([^/]+)\/?$/)?.[1];
+
+  const navigatePath = (nextPath: string) => {
+    window.history.pushState({}, '', nextPath);
+    setPath(nextPath);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  React.useEffect(() => {
+    const handlePopState = () => setPath(window.location.pathname);
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   React.useEffect(() => {
     if (publicToken) {
@@ -165,6 +181,36 @@ const AppContent: React.FC = () => {
   }
 
   if (!user) {
+    if (path === '/privacy') {
+      return (
+        <LegalPage
+          type="privacy"
+          onHome={() => navigatePath('/')}
+          onLogin={() => navigatePath('/login')}
+        />
+      );
+    }
+
+    if (path === '/terms') {
+      return (
+        <LegalPage
+          type="terms"
+          onHome={() => navigatePath('/')}
+          onLogin={() => navigatePath('/login')}
+        />
+      );
+    }
+
+    if (path === '/' || path === '') {
+      return (
+        <LandingPage
+          onLogin={() => navigatePath('/login')}
+          onPrivacy={() => navigatePath('/privacy')}
+          onTerms={() => navigatePath('/terms')}
+        />
+      );
+    }
+
     return <AuthPage />;
   }
 
@@ -209,15 +255,7 @@ const AppContent: React.FC = () => {
             <div className="flex justify-between items-center h-16">
               <div className="flex items-center space-x-8">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl">
-                    <FileText size={24} className="text-white" />
-                  </div>
-                  <div>
-                    <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                      Zenvoice
-                    </h1>
-                    <p className="text-xs text-gray-500">Welcome, {user.name}</p>
-                  </div>
+                  <BrandMark subtitle={`Welcome, ${user.name}`} />
                 </div>
 
                 <div className="hidden md:flex space-x-6">
@@ -274,18 +312,10 @@ const AppContent: React.FC = () => {
           <div className="max-w-7xl mx-auto px-6 py-8">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <div className="flex items-center gap-3 mb-4 md:mb-0">
-                <div className="p-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl">
-                  <FileText size={20} className="text-white" />
-                </div>
-                <div>
-                  <h3 className="font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    Zenvoice
-                  </h3>
-                  <p className="text-sm text-gray-600">Professional invoicing made simple</p>
-                </div>
+                <BrandMark subtitle="Professional invoicing made simple" />
               </div>
               <div className="text-sm text-gray-500">
-                <p>&copy; 2025 Zenvoice. Built with React & TypeScript.</p>
+                <p>&copy; 2026 Zenvoice. Built with React & TypeScript.</p>
               </div>
             </div>
           </div>
