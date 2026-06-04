@@ -7,7 +7,7 @@ import { InvoiceData } from './types/invoice';
 import { generateInvoicePDF } from './utils/pdfGenerator';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AuthPage from './components/AuthPage';
-import { getInvoices, createInvoice, updateInvoice, deleteInvoice } from './utils/api';
+import { getInvoices, getPublicInvoice, createInvoice, updateInvoice, deleteInvoice } from './utils/api';
 
 type View = 'dashboard' | 'create' | 'edit' | 'public';
 
@@ -18,12 +18,36 @@ const AppContent: React.FC = () => {
   const [editingInvoice, setEditingInvoice] = useState<InvoiceData | null>(null);
   const [publicInvoice, setPublicInvoice] = useState<InvoiceData | null>(null);
   const [isFetching, setIsFetching] = useState(false);
+  const [publicError, setPublicError] = useState('');
+  const publicToken = window.location.pathname.match(/^\/invoice\/([^/]+)\/?$/)?.[1];
 
   React.useEffect(() => {
-    if (user) {
+    if (publicToken) {
+      fetchPublicInvoice(publicToken);
+    } else if (user) {
       fetchInvoices();
     }
-  }, [user]);
+  }, [user, publicToken]);
+
+  const fetchPublicInvoice = async (token: string) => {
+    setIsFetching(true);
+    setPublicError('');
+    try {
+      const row = await getPublicInvoice(token);
+      setPublicInvoice({
+        ...row.data,
+        id: String(row.id),
+        status: row.status || row.data.status,
+        createdAt: row.created_at || row.data.createdAt,
+        updatedAt: row.updated_at || row.data.updatedAt
+      });
+      setCurrentView('public');
+    } catch (error) {
+      setPublicError(error instanceof Error ? error.message : 'Invoice not found');
+    } finally {
+      setIsFetching(false);
+    }
+  };
 
   const fetchInvoices = async () => {
     setIsFetching(true);
@@ -80,7 +104,7 @@ const AppContent: React.FC = () => {
   };
 
   const handlePreviewInvoice = (invoice: InvoiceData) => {
-    generateInvoicePDF(invoice, invoice.template);
+    generateInvoicePDF(invoice);
   };
 
   const handleCreateNew = () => {
@@ -96,6 +120,11 @@ const AppContent: React.FC = () => {
   };
 
   const handleViewPublic = (invoice: InvoiceData) => {
+    if (invoice.shareToken && invoice.shareableLink) {
+      window.open(invoice.shareableLink, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
     setPublicInvoice(invoice);
     setCurrentView('public');
   };
@@ -110,6 +139,29 @@ const AppContent: React.FC = () => {
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
+  }
+
+  if (publicToken) {
+    if (isFetching) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      );
+    }
+
+    if (publicError || !publicInvoice) {
+      return (
+        <div className="min-h-screen flex items-center justify-center p-6 bg-gray-50">
+          <div className="bg-white border border-gray-200 p-8 text-center shadow-sm">
+            <h1 className="text-xl font-semibold text-gray-900">Invoice unavailable</h1>
+            <p className="mt-2 text-gray-600">{publicError || 'This invoice link is not available.'}</p>
+          </div>
+        </div>
+      );
+    }
+
+    return <PublicInvoiceView invoice={publicInvoice} />;
   }
 
   if (!user) {

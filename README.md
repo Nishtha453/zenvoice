@@ -67,6 +67,8 @@ NODE_ENV=production
 CLIENT_URL=https://your-frontend-domain.com
 JWT_SECRET=replace-with-a-long-random-secret
 DATABASE_URL=postgresql://...
+RESEND_API_KEY=re_...
+EMAIL_FROM=Zenvoice <invoices@your-verified-domain.com>
 ```
 
 `CLIENT_URL` can contain multiple comma-separated origins for preview deployments.
@@ -91,6 +93,7 @@ Backend settings:
 - Build command: `npm install`
 - Start command: `npm start`
 - Environment variables: `NODE_ENV`, `CLIENT_URL`, `JWT_SECRET`, `DATABASE_URL`
+- For automatic invoice email: add `RESEND_API_KEY` and `EMAIL_FROM` from a verified Resend domain.
 
 Run `server/schema.sql` once against the production database before real users sign up.
 
@@ -101,6 +104,8 @@ Run `server/schema.sql` once against the production database before real users s
 - Set `VITE_API_URL` to the real backend domain.
 - Run the database schema.
 - Verify signup, login, create invoice, edit invoice, delete invoice, and PDF download.
+- Verify public invoice links in a private browser window.
+- Configure Resend and verify invoice email delivery.
 - Add monitoring/logging before inviting many users.
 - Add rate limiting and input validation before public launch.
 
