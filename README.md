@@ -170,5 +170,8 @@ zenvoice/
  
 | Dashboard | Invoice Form | Public Invoice |
 |-----------|-------------|----------------|
-| ![Dashboard](c:\Users\nisht\OneDrive\Pictures\Screenshots 1\Screenshot 2026-06-04 114008.png) | ![Form](c:\Users\nisht\OneDrive\Pictures\Screenshots 1\Screenshot 2026-06-04 115226.png) | ![Public](c:\Users\nisht\OneDrive\Pictures\Screenshots 1\Screenshot 2026-06-04 114737.png) |
+| ![Dashboard](<img width="2880" height="1800" alt="dashboard" src="https://github.com/user-attachments/assets/7d199aa9-53bb-4f92-b6d8-7571d56c52d1" />
+) | ![Form](<img width="2880" height="1800" alt="invoice-form" src="https://github.com/user-attachments/assets/703f2f82-6f3c-4107-8b7c-718dcbba8a38" />
+) | ![Public](<img width="2880" height="1800" alt="public-invoice" src="https://github.com/user-attachments/assets/6d6c1bb6-3d8c-400c-a3c0-4c49f68aab86" />
+) |
  
