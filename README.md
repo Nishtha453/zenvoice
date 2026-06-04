@@ -2,7 +2,7 @@
  
 > A full-stack invoicing web app built for freelancers and small businesses. Create, send, and track professional invoices with PDF export, email delivery, and shareable public links.
  
-**Live Demo:** [zenvoice.in](https://zenvoice.in) · **API:** [zenvoice-api.onrender.com](https://zenvoice-api.onrender.com/health)
+**Live Demo:** [zenvoice-app.vercel.app](https://zenvoice-app.vercel.app/) · **API:** [zenvoice-api.onrender.com](https://zenvoice-api.onrender.com/health)
  
 ---
  
@@ -165,3 +165,10 @@ zenvoice/
 - Implement Razorpay "Pay Now" on public invoice view
 - Add React Router for proper deep linking
 - Write unit tests for `calculations.ts` and integration tests for API routes
+
+## Screenshots
+ 
+| Dashboard | Invoice Form | Public Invoice |
+|-----------|-------------|----------------|
+| ![Dashboard](c:\Users\nisht\OneDrive\Pictures\Screenshots 1\Screenshot 2026-06-04 114008.png) | ![Form](c:\Users\nisht\OneDrive\Pictures\Screenshots 1\Screenshot 2026-06-04 115226.png) | ![Public](c:\Users\nisht\OneDrive\Pictures\Screenshots 1\Screenshot 2026-06-04 114737.png) |
+ 
