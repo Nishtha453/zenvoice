@@ -24,6 +24,18 @@
   ],
   "rewrites": [
     {
+      "source": "/login",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/privacy",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/terms",
+      "destination": "/index.html"
+    },
+    {
       "source": "/invoice/:token",
       "destination": "/index.html"
     }

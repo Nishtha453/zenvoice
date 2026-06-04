@@ -136,6 +136,12 @@ const AuthPage: React.FC = () => {
             {isLogin ? 'Register' : 'Login'}
           </button>
         </p>
+
+        <p className="text-center mt-4 text-sm">
+          <a href="/" className="text-gray-500 hover:text-blue-600">
+            Back to homepage
+          </a>
+        </p>
       </div>
     </div>
   );
