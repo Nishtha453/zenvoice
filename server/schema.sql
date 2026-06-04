@@ -21,3 +21,7 @@ CREATE INDEX IF NOT EXISTS invoices_user_created_at_idx
 
 CREATE INDEX IF NOT EXISTS invoices_user_status_idx
   ON invoices (user_id, status);
+
+CREATE INDEX IF NOT EXISTS invoices_share_token_idx
+  ON invoices ((data->>'shareToken'))
+  WHERE data ? 'shareToken';

@@ -10,10 +10,20 @@ if (!process.env.JWT_SECRET) {
 }
 
 router.post('/register', async (req, res) => {
-  const { name, email, password } = req.body;
+  const name = String(req.body.name || '').trim();
+  const email = String(req.body.email || '').trim().toLowerCase();
+  const password = String(req.body.password || '');
 
   if (!name || !email || !password) {
     return res.status(400).json({ error: 'All fields are required' });
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ error: 'Enter a valid email address' });
+  }
+
+  if (password.length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters' });
   }
 
   try {
@@ -54,7 +64,8 @@ router.post('/register', async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const email = String(req.body.email || '').trim().toLowerCase();
+  const password = String(req.body.password || '');
 
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required' });
