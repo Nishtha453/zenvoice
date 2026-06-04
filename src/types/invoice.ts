@@ -50,6 +50,7 @@ export interface InvoiceData {
   isRecurring: boolean;
   recurringFrequency?: 'weekly' | 'monthly' | 'quarterly';
   nextDueDate?: string;
+  shareToken?: string;
   shareableLink?: string;
   paymentLink?: string;
 }

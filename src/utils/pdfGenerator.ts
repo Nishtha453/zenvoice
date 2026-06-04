@@ -1,403 +1,134 @@
 import { InvoiceData } from '../types/invoice';
-import { formatCurrency } from './calculations';
 
-export const generateInvoicePDF = (invoiceData: InvoiceData, template: string = 'modern'): void => {
-  // Create a new window for the PDF content
-  const printWindow = window.open('', '_blank');
-  if (!printWindow) return;
+const printableCurrency = (amount: number, currency: InvoiceData['currency']) => {
+  return `${currency} ${amount.toFixed(2)}`;
+};
 
-  const getTemplateStyles = (template: string) => {
-    const baseStyles = `
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        line-height: 1.6;
-        color: #1F2937;
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 40px 20px;
-        background: #ffffff;
-      }
-    `;
+export const generateInvoicePDF = async (invoice: InvoiceData): Promise<void> => {
+  const { jsPDF } = await import('jspdf');
+  const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const margin = 18;
+  const contentWidth = pageWidth - margin * 2;
+  let y = 20;
 
-    switch (template) {
-      case 'classic':
-        return baseStyles + `
-          .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 40px;
-            border-bottom: 2px solid #8B5CF6;
-            padding-bottom: 20px;
-          }
-          
-          .logo-section h1 {
-            font-size: 28px;
-            color: #8B5CF6;
-            font-weight: 600;
-            font-family: serif;
-          }
-          
-          .items-table th {
-            background: #8B5CF6;
-            color: white;
-          }
-        `;
-      
-      case 'minimal':
-        return baseStyles + `
-          .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 40px;
-            border-bottom: 1px solid #E5E7EB;
-            padding-bottom: 20px;
-          }
-          
-          .logo-section h1 {
-            font-size: 24px;
-            color: #374151;
-            font-weight: 300;
-            letter-spacing: 2px;
-          }
-          
-          .items-table th {
-            background: #F9FAFB;
-            color: #374151;
-            border-bottom: 2px solid #E5E7EB;
-          }
-        `;
-      
-      default: // modern
-        return baseStyles + `
-          .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 40px;
-            border-bottom: 3px solid #3B82F6;
-            padding-bottom: 20px;
-          }
-          
-          .logo-section h1 {
-            font-size: 32px;
-            color: #3B82F6;
-            font-weight: 700;
-          }
-          
-          .items-table th {
-            background: #3B82F6;
-            color: white;
-          }
-        `;
+  const ensureSpace = (height: number) => {
+    if (y + height > 280) {
+      pdf.addPage();
+      y = 20;
     }
   };
-  const htmlContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Invoice ${invoiceData.invoiceNumber}</title>
-      <style>
-        ${getTemplateStyles(template)}
-        
-        .company-logo {
-          max-width: 120px;
-          max-height: 60px;
-          margin-bottom: 12px;
-        }
 
-        .invoice-details {
-          text-align: right;
-        }
-        
-        .invoice-details h2 {
-          font-size: 24px;
-          color: #1F2937;
-          margin-bottom: 8px;
-        }
-        
-        .invoice-meta p {
-          margin-bottom: 4px;
-          font-size: 14px;
-        }
-        
-        .addresses {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 40px;
-        }
-        
-        .address-block {
-          width: 48%;
-        }
-        
-        .address-block h3 {
-          font-size: 16px;
-          font-weight: 600;
-          color: #1F2937;
-          margin-bottom: 12px;
-          padding: 8px 0;
-          border-bottom: 2px solid #E5E7EB;
-        }
-        
-        .address-content p {
-          margin-bottom: 4px;
-          font-size: 14px;
-          line-height: 1.5;
-        }
-        
-        .items-table {
-          width: 100%;
-          border-collapse: collapse;
-          margin-bottom: 30px;
-          background: white;
-          border-radius: 8px;
-          overflow: hidden;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-        
-        .items-table th {
-          font-weight: 600;
-          padding: 16px 12px;
-          text-align: left;
-          font-size: 14px;
-        }
-        
-        .items-table td {
-          padding: 16px 12px;
-          border-bottom: 1px solid #E5E7EB;
-          font-size: 14px;
-        }
-        
-        .items-table tr:last-child td {
-          border-bottom: none;
-        }
-        
-        .items-table tr:nth-child(even) {
-          background: #F9FAFB;
-        }
-        
-        .text-right {
-          text-align: right;
-        }
-        
-        .totals {
-          margin-left: auto;
-          width: 300px;
-          background: #F9FAFB;
-          border-radius: 8px;
-          padding: 20px;
-          border: 1px solid #E5E7EB;
-        }
-        
-        .total-row {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 12px;
-          font-size: 14px;
-        }
-        
-        .total-row.subtotal {
-          color: #6B7280;
-        }
-        
-        .total-row.tax {
-          color: #6B7280;
-        }
-        
-        .total-row.final {
-          font-size: 18px;
-          font-weight: 700;
-          color: #1F2937;
-          border-top: 2px solid #3B82F6;
-          padding-top: 12px;
-          margin-top: 16px;
-          margin-bottom: 0;
-        }
-        
-        .notes, .terms, .payment-instructions {
-          margin-top: 40px;
-          padding: 20px;
-          background: #F9FAFB;
-          border-radius: 8px;
-          border-left: 4px solid #3B82F6;
-        }
-        
-        .notes h4, .terms h4, .payment-instructions h4 {
-          font-size: 16px;
-          font-weight: 600;
-          color: #1F2937;
-          margin-bottom: 8px;
-        }
-        
-        .notes p, .terms p, .payment-instructions p {
-          font-size: 14px;
-          color: #6B7280;
-          line-height: 1.6;
-        }
-        
-        .payment-section {
-          margin-top: 30px;
-          text-align: center;
-          padding: 20px;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          border-radius: 12px;
-          color: white;
-        }
-        
-        .payment-button {
-          display: inline-block;
-          padding: 12px 24px;
-          background: white;
-          color: #667eea;
-          text-decoration: none;
-          border-radius: 8px;
-          font-weight: 600;
-          margin-top: 12px;
-        }
-        
-        .footer {
-          margin-top: 60px;
-          text-align: center;
-          font-size: 12px;
-          color: #9CA3AF;
-          border-top: 1px solid #E5E7EB;
-          padding-top: 20px;
-        }
-        
-        @media print {
-          body {
-            padding: 20px;
-          }
-          
-          .header {
-            break-inside: avoid;
-          }
-          
-          .items-table {
-            break-inside: avoid;
-          }
-        }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <div class="logo-section">
-          ${invoiceData.companyLogo ? `<img src="${invoiceData.companyLogo}" alt="Company Logo" class="company-logo" />` : ''}
-          <h1>INVOICE</h1>
-          <p style="color: #6B7280; font-size: 14px;">Professional Invoice</p>
-        </div>
-        <div class="invoice-details">
-          <h2>#${invoiceData.invoiceNumber}</h2>
-          <div class="invoice-meta">
-            <p><strong>Date:</strong> ${new Date(invoiceData.date).toLocaleDateString()}</p>
-            <p><strong>Due Date:</strong> ${new Date(invoiceData.dueDate).toLocaleDateString()}</p>
-            <p><strong>Status:</strong> <span style="color: #059669; font-weight: 600;">${invoiceData.status.toUpperCase()}</span></p>
-          </div>
-        </div>
-      </div>
-      
-      <div class="addresses">
-        <div class="address-block">
-          <h3>From</h3>
-          <div class="address-content">
-            <p><strong>${invoiceData.fromName}</strong></p>
-            <p>${invoiceData.fromEmail}</p>
-            <p>${invoiceData.fromPhone}</p>
-            <p>${invoiceData.fromAddress}</p>
-          </div>
-        </div>
-        
-        <div class="address-block">
-          <h3>Bill To</h3>
-          <div class="address-content">
-            <p><strong>${invoiceData.toName}</strong></p>
-            <p>${invoiceData.toEmail}</p>
-            <p>${invoiceData.toPhone}</p>
-            <p>${invoiceData.toAddress}</p>
-          </div>
-        </div>
-      </div>
-      
-      <table class="items-table">
-        <thead>
-          <tr>
-            <th>Description</th>
-            <th class="text-right">Qty</th>
-            <th class="text-right">Rate</th>
-            <th class="text-right">Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${invoiceData.items.map(item => `
-            <tr>
-              <td>${item.description}</td>
-              <td class="text-right">${item.quantity}</td>
-              <td class="text-right">${formatCurrency(item.rate, invoiceData.currency)}</td>
-              <td class="text-right">${formatCurrency(item.amount, invoiceData.currency)}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-      
-      <div class="totals">
-        <div class="total-row subtotal">
-          <span>Subtotal:</span>
-          <span>${formatCurrency(invoiceData.subtotal, invoiceData.currency)}</span>
-        </div>
-        <div class="total-row tax">
-          <span>Tax (${invoiceData.taxRate}%):</span>
-          <span>${formatCurrency(invoiceData.taxAmount, invoiceData.currency)}</span>
-        </div>
-        <div class="total-row final">
-          <span>Total:</span>
-          <span>${formatCurrency(invoiceData.total, invoiceData.currency)}</span>
-        </div>
-      </div>
-      
-      ${invoiceData.notes ? `
-        <div class="notes">
-          <h4>Notes</h4>
-          <p>${invoiceData.notes}</p>
-        </div>
-      ` : ''}
-      
-      ${invoiceData.terms ? `
-        <div class="terms">
-          <h4>Terms & Conditions</h4>
-          <p>${invoiceData.terms}</p>
-        </div>
-      ` : ''}
-      
-      ${invoiceData.paymentInstructions ? `
-        <div class="payment-instructions">
-          <h4>Payment Instructions</h4>
-          <p>${invoiceData.paymentInstructions}</p>
-        </div>
-      ` : ''}
-      
-      <div class="footer">
-        <p>Thank you for your business!</p>
-        <p>Generated on ${new Date().toLocaleDateString()} • Invoice Builder Pro</p>
-      </div>
-    </body>
-    </html>
-  `;
-
-  printWindow.document.write(htmlContent);
-  printWindow.document.close();
-  
-  // Wait for content to load, then print
-  printWindow.onload = () => {
-    setTimeout(() => {
-      printWindow.print();
-    }, 250);
+  const addTextBlock = (text: string, x: number, maxWidth: number, lineHeight = 5) => {
+    const lines = pdf.splitTextToSize(text || '-', maxWidth);
+    pdf.text(lines, x, y);
+    y += lines.length * lineHeight;
   };
+
+  pdf.setTextColor(37, 99, 235);
+  pdf.setFontSize(24);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('INVOICE', margin, y);
+
+  pdf.setTextColor(31, 41, 55);
+  pdf.setFontSize(12);
+  pdf.text(`#${invoice.invoiceNumber}`, pageWidth - margin, y, { align: 'right' });
+  y += 8;
+
+  pdf.setDrawColor(37, 99, 235);
+  pdf.setLineWidth(0.8);
+  pdf.line(margin, y, pageWidth - margin, y);
+  y += 10;
+
+  pdf.setFontSize(10);
+  pdf.setFont('helvetica', 'normal');
+  pdf.text(`Invoice date: ${new Date(invoice.date).toLocaleDateString()}`, margin, y);
+  pdf.text(`Due date: ${new Date(invoice.dueDate).toLocaleDateString()}`, pageWidth - margin, y, { align: 'right' });
+  y += 10;
+
+  const addressTop = y;
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('FROM', margin, y);
+  pdf.text('BILL TO', pageWidth / 2 + 5, y);
+  y += 6;
+
+  pdf.setFont('helvetica', 'normal');
+  const fromLines = pdf.splitTextToSize(
+    [invoice.fromName, invoice.fromEmail, invoice.fromPhone, invoice.fromAddress].filter(Boolean).join('\n'),
+    contentWidth / 2 - 8
+  );
+  const toLines = pdf.splitTextToSize(
+    [invoice.toName, invoice.toEmail, invoice.toPhone, invoice.toAddress].filter(Boolean).join('\n'),
+    contentWidth / 2 - 8
+  );
+  pdf.text(fromLines, margin, y);
+  pdf.text(toLines, pageWidth / 2 + 5, y);
+  y = addressTop + 8 + Math.max(fromLines.length, toLines.length) * 5 + 8;
+
+  ensureSpace(25);
+  pdf.setFillColor(37, 99, 235);
+  pdf.rect(margin, y, contentWidth, 8, 'F');
+  pdf.setTextColor(255, 255, 255);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('Description', margin + 2, y + 5.5);
+  pdf.text('Qty', 125, y + 5.5, { align: 'right' });
+  pdf.text('Rate', 158, y + 5.5, { align: 'right' });
+  pdf.text('Amount', pageWidth - margin - 2, y + 5.5, { align: 'right' });
+  y += 11;
+
+  pdf.setTextColor(31, 41, 55);
+  pdf.setFont('helvetica', 'normal');
+  invoice.items.forEach((item) => {
+    const descriptionLines = pdf.splitTextToSize(item.description || '-', 82);
+    const rowHeight = Math.max(8, descriptionLines.length * 5 + 3);
+    ensureSpace(rowHeight);
+    pdf.text(descriptionLines, margin + 2, y + 4);
+    pdf.text(String(item.quantity), 125, y + 4, { align: 'right' });
+    pdf.text(printableCurrency(item.rate, invoice.currency), 158, y + 4, { align: 'right' });
+    pdf.text(printableCurrency(item.amount, invoice.currency), pageWidth - margin - 2, y + 4, { align: 'right' });
+    pdf.setDrawColor(229, 231, 235);
+    pdf.line(margin, y + rowHeight - 1, pageWidth - margin, y + rowHeight - 1);
+    y += rowHeight;
+  });
+
+  y += 5;
+  ensureSpace(30);
+  pdf.setFont('helvetica', 'normal');
+  pdf.text('Subtotal', 145, y, { align: 'right' });
+  pdf.text(printableCurrency(invoice.subtotal, invoice.currency), pageWidth - margin, y, { align: 'right' });
+  y += 6;
+  pdf.text(`Tax (${invoice.taxRate}%)`, 145, y, { align: 'right' });
+  pdf.text(printableCurrency(invoice.taxAmount, invoice.currency), pageWidth - margin, y, { align: 'right' });
+  y += 7;
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(12);
+  pdf.text('Total', 145, y, { align: 'right' });
+  pdf.text(printableCurrency(invoice.total, invoice.currency), pageWidth - margin, y, { align: 'right' });
+  y += 14;
+
+  pdf.setFontSize(10);
+  const sections = [
+    ['Notes', invoice.notes],
+    ['Terms & Conditions', invoice.terms],
+    ['Payment Instructions', invoice.paymentInstructions]
+  ] as const;
+
+  sections.forEach(([title, content]) => {
+    if (!content) return;
+    const lines = pdf.splitTextToSize(content, contentWidth);
+    ensureSpace(lines.length * 5 + 10);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(title, margin, y);
+    y += 6;
+    pdf.setFont('helvetica', 'normal');
+    addTextBlock(content, margin, contentWidth);
+    y += 4;
+  });
+
+  pdf.setTextColor(107, 114, 128);
+  pdf.setFontSize(9);
+  pdf.text('Generated with Zenvoice', margin, 290);
+
+  const safeNumber = invoice.invoiceNumber.replace(/[^a-z0-9-_]/gi, '-');
+  pdf.save(`Invoice-${safeNumber}.pdf`);
 };

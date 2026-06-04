@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Mail, Send, X } from 'lucide-react';
 import { InvoiceData } from '../types/invoice';
 
@@ -9,18 +9,13 @@ interface EmailInvoiceProps {
   onSend: (emailData: { to: string; subject: string; message: string }) => void;
 }
 
-export const EmailInvoice: React.FC<EmailInvoiceProps> = ({
-  invoice,
-  isOpen,
-  onClose,
-  onSend
-}) => {
-  const [emailData, setEmailData] = useState({
-    to: invoice.toEmail,
-    subject: `Invoice ${invoice.invoiceNumber} from ${invoice.fromName}`,
-    message: `Dear ${invoice.toName},
+const createEmailData = (invoice: InvoiceData) => ({
+  to: invoice.toEmail,
+  subject: `Invoice ${invoice.invoiceNumber} from ${invoice.fromName}`,
+  message: `Dear ${invoice.toName},
 
-Please find attached your invoice ${invoice.invoiceNumber} for the amount of ${invoice.total}.
+Please view your invoice ${invoice.invoiceNumber} for the amount of ${invoice.total} using this secure link:
+${invoice.shareableLink || window.location.href}
 
 Payment is due by ${new Date(invoice.dueDate).toLocaleDateString()}.
 
@@ -28,17 +23,33 @@ Thank you for your business!
 
 Best regards,
 ${invoice.fromName}`
-  });
+});
+
+export const EmailInvoice: React.FC<EmailInvoiceProps> = ({
+  invoice,
+  isOpen,
+  onClose,
+  onSend
+}) => {
+  const [emailData, setEmailData] = useState(() => createEmailData(invoice));
 
   const [isSending, setIsSending] = useState(false);
+  const [sendError, setSendError] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setEmailData(createEmailData(invoice));
+    }
+  }, [isOpen, invoice]);
 
   const handleSend = async () => {
     setIsSending(true);
+    setSendError('');
     try {
       await onSend(emailData);
       onClose();
     } catch (error) {
-      console.error('Failed to send email:', error);
+      setSendError(error instanceof Error ? error.message : 'Email could not be sent');
     } finally {
       setIsSending(false);
     }
@@ -102,9 +113,15 @@ ${invoice.fromName}`
             />
           </div>
 
+          {sendError && (
+            <div className="bg-red-50 text-red-700 p-4 rounded-lg text-sm">
+              {sendError}
+            </div>
+          )}
+
           <div className="bg-blue-50 p-4 rounded-lg">
             <p className="text-sm text-blue-800">
-              <strong>Note:</strong> The invoice PDF will be automatically attached to this email.
+              <strong>Note:</strong> Zenvoice sends this message to the client email saved on the invoice.
             </p>
           </div>
         </div>

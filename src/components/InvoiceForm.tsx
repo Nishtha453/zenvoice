@@ -13,6 +13,7 @@ import { LogoUpload } from './LogoUpload';
 import { TemplateSelector } from './TemplateSelector';
 import { CurrencySelector } from './CurrencySelector';
 import { EmailInvoice } from './EmailInvoice';
+import { sendInvoiceEmail } from '../utils/api';
 
 interface InvoiceFormProps {
   onSave: (invoice: InvoiceData) => void;
@@ -26,6 +27,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
   initialData 
 }) => {
   const [showEmailModal, setShowEmailModal] = useState(false);
+  const initialShareToken = initialData?.shareToken || crypto.randomUUID();
   
   const [formData, setFormData] = useState<InvoiceData>(
     initialData || {
@@ -68,7 +70,8 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
       
       template: 'modern',
       isRecurring: false,
-      shareableLink: `${window.location.origin}/invoice/${crypto.randomUUID()}`,
+      shareToken: initialShareToken,
+      shareableLink: `${window.location.origin}/invoice/${initialShareToken}`,
       paymentLink: undefined
     }
   );
@@ -146,16 +149,23 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
   };
 
   const handleEmailSend = async (emailData: { to: string; subject: string; message: string }) => {
-    // In a real app, this would integrate with EmailJS, Resend, or similar service
-    console.log('Sending email:', emailData);
-    alert('Email sent successfully! (Demo mode)');
+    await sendInvoiceEmail(formData.id, emailData);
+    alert('Invoice email sent successfully.');
   };
 
-  const generateShareableLink = () => {
-    const newLink = `${window.location.origin}/invoice/${crypto.randomUUID()}`;
-    setFormData(prev => ({ ...prev, shareableLink: newLink }));
-    navigator.clipboard.writeText(newLink);
-    alert('Shareable link copied to clipboard!');
+  const generateShareableLink = async () => {
+    const shareToken = formData.shareToken || crypto.randomUUID();
+    const newLink = `${window.location.origin}/invoice/${shareToken}`;
+    setFormData(prev => ({ ...prev, shareToken, shareableLink: newLink }));
+
+    try {
+      await navigator.clipboard.writeText(newLink);
+      alert(initialData
+        ? 'Public invoice link copied. Save the invoice if you changed it.'
+        : 'Public invoice link copied. Save the invoice before sharing it.');
+    } catch {
+      window.prompt('Copy this public invoice link:', newLink);
+    }
   };
   return (
     <div className="max-w-5xl mx-auto p-6 bg-white rounded-xl shadow-lg">
@@ -523,7 +533,13 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
           
           <button
             type="button"
-            onClick={() => setShowEmailModal(true)}
+            onClick={() => {
+              if (!initialData || !formData.shareToken) {
+                alert('Generate a public link and save the invoice first, then edit it to email the working link.');
+                return;
+              }
+              setShowEmailModal(true);
+            }}
             className="flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm"
           >
             <Mail size={18} />

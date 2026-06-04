@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/invoice/:token",
+      "destination": "/index.html"
+    }
+  ]
+}

@@ -64,6 +64,10 @@ export const getInvoices = async () => {
   });
 };
 
+export const getPublicInvoice = async (token: string) => {
+  return request<InvoiceRow>(`${API_URL}/invoices/public/${encodeURIComponent(token)}`);
+};
+
 export const createInvoice = async (data: InvoiceData) => {
   return request<InvoiceRow>(`${API_URL}/invoices`, {
     method: 'POST',
@@ -84,5 +88,16 @@ export const deleteInvoice = async (id: string) => {
   return request(`${API_URL}/invoices/${id}`, {
     method: 'DELETE',
     headers: headers()
+  });
+};
+
+export const sendInvoiceEmail = async (
+  invoiceId: string,
+  emailData: { to: string; subject: string; message: string }
+) => {
+  return request<{ message: string; id: string }>(`${API_URL}/email/send-invoice`, {
+    method: 'POST',
+    headers: headers(),
+    body: JSON.stringify({ invoiceId, ...emailData })
   });
 };

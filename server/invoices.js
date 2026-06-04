@@ -3,6 +3,27 @@ const router = express.Router();
 const pool = require('./db');
 const authMiddleware = require('./middleware');
 
+router.get('/public/:token', async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, data, status, created_at, updated_at
+       FROM invoices
+       WHERE data->>'shareToken' = $1
+       LIMIT 1`,
+      [req.params.token]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Invoice not found' });
+    }
+
+    res.status(200).json(result.rows[0]);
+  } catch (error) {
+    console.error('Get public invoice error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const result = await pool.query(

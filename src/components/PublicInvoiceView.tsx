@@ -14,7 +14,7 @@ export const PublicInvoiceView: React.FC<PublicInvoiceViewProps> = ({
   onPayNow
 }) => {
   const handleDownloadPDF = () => {
-    generateInvoicePDF(invoice, invoice.template);
+    generateInvoicePDF(invoice);
   };
 
   const handleShare = async () => {
