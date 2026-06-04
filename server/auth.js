@@ -67,13 +67,13 @@ router.post('/login', async (req, res) => {
     );
 
     if (user.rows.length === 0) {
-      return res.status(400).json({ error: 'Invalid email or password' });
+      return res.status(400).json({ error: 'Incorrect email or password' });
     }
 
     const isMatch = await bcrypt.compare(password, user.rows[0].password);
 
     if (!isMatch) {
-      return res.status(400).json({ error: 'Invalid email or password' });
+      return res.status(400).json({ error: 'Incorrect email or password' });
     }
 
     const token = jwt.sign(
