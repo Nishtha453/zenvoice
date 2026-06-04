@@ -39,8 +39,8 @@ const AuthPage: React.FC = () => {
       } else {
         login(response.token, response.user);
       }
-    } catch {
-      setError('Something went wrong. Please try again.');
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }
