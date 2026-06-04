@@ -50,12 +50,12 @@ cd zenvoice
  
 # Frontend
 npm install
-cp .env.example .env          # set VITE_API_URL=http://localhost:5000
+cp .env.example .env          
  
 # Backend
 cd server
 npm install
-cp .env.example .env          # fill in DB credentials and JWT_SECRET
+cp .env.example .env          
  
 # Init database
 psql "$DATABASE_URL" -f schema.sql
@@ -127,27 +127,27 @@ CREATE TABLE invoices (
 zenvoice/
 ├── src/
 │   ├── components/
-│   │   ├── InvoiceForm.tsx       # Main form with live calculations
-│   │   ├── InvoiceDashboard.tsx  # Invoice list + analytics
-│   │   ├── PublicInvoiceView.tsx # Client-facing public page
-│   │   ├── EmailInvoice.tsx      # Email modal
-│   │   └── AuthPage.tsx          # Login/register
+│   │   ├── InvoiceForm.tsx       
+│   │   ├── InvoiceDashboard.tsx  
+│   │   ├── PublicInvoiceView.tsx 
+│   │   ├── EmailInvoice.tsx      
+│   │   └── AuthPage.tsx          
 │   ├── context/
-│   │   └── AuthContext.tsx       # JWT auth state
+│   │   └── AuthContext.tsx      
 │   ├── utils/
-│   │   ├── api.ts                # Fetch wrappers
-│   │   ├── calculations.ts       # Invoice math
-│   │   └── pdfGenerator.ts       # jsPDF logic
+│   │   ├── api.ts                
+│   │   ├── calculations.ts      
+│   │   └── pdfGenerator.ts       
 │   └── types/
-│       └── invoice.ts            # TypeScript interfaces
+│       └── invoice.ts            
 └── server/
-    ├── index.js                  # Express entry point
-    ├── auth.js                   # Auth routes
-    ├── invoices.js               # Invoice CRUD routes
-    ├── email.js                  # Email route
-    ├── middleware.js             # JWT verification
-    ├── db.js                     # pg Pool connection
-    └── schema.sql                # DB init script
+    ├── index.js                 
+    ├── auth.js                   
+    ├── invoices.js               
+    ├── email.js                 
+    ├── middleware.js             
+    ├── db.js                     
+    └── schema.sql                
 ```
  
 ## Key Implementation Decisions
@@ -167,11 +167,15 @@ zenvoice/
 - Write unit tests for `calculations.ts` and integration tests for API routes
 
 ## Screenshots
- 
-| Dashboard | Invoice Form | Public Invoice |
-|-----------|-------------|----------------|
-| ![Dashboard](<img width="2880" height="1800" alt="dashboard" src="https://github.com/user-attachments/assets/7d199aa9-53bb-4f92-b6d8-7571d56c52d1" />
-) | ![Form](<img width="2880" height="1800" alt="invoice-form" src="https://github.com/user-attachments/assets/703f2f82-6f3c-4107-8b7c-718dcbba8a38" />
-) | ![Public](<img width="2880" height="1800" alt="public-invoice" src="https://github.com/user-attachments/assets/6d6c1bb6-3d8c-400c-a3c0-4c49f68aab86" />
-) |
- 
+
+**Dashboard**
+![Dashboard](https://github.com/user-attachments/assets/7d199aa9-53bb-4f92-b6d8-7571d56c52d1)
+
+**Invoice Form**
+![Invoice Form](https://github.com/user-attachments/assets/703f2f82-6f3c-4107-8b7c-718dcbba8a38)
+
+**Public Invoice**
+![Public Invoice](https://github.com/user-attachments/assets/6d6c1bb6-3d8c-400c-a3c0-4c49f68aab86)
+
+---
+Built by [Nishtha Gupta](https://github.com/Nishtha453) · B.Tech Mathematics and Computing, RGIPT (2024–2028)
